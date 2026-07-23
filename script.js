@@ -7,7 +7,24 @@ function _om(){_q("modalOverlay").classList.add("active");}
 function _cm(){_q("modalOverlay").classList.remove("active");}
 function _of(){if(!_u)return;var l=_q("lightbox"),i=_q("lightboxImg");i.src=_u;l.classList.add("active");}
 function _cf(){_q("lightbox").classList.remove("active");}
-function _dl(){if(!_u){_t("\u26a0\ufe0f Generate an image before downloading");return;}var a=document.createElement("a");a.href=_u;a.download="nothing_text2img_"+Date.now()+".png";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();document.body.removeChild(a);_t("\u2b07\ufe0f Download started!");}
+async function _dl(){
+if(!_u){_t("\u26a0\ufe0f Generate an image before downloading");return;}
+try{
+var r=await fetch(_u);
+if(!r.ok)throw new Error("HTTP "+r.status);
+var bl=await r.blob();
+var obj=URL.createObjectURL(bl);
+var a=document.createElement("a");
+a.href=obj;a.download="nothing_text2img_"+Date.now()+".png";
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+setTimeout(function(){URL.revokeObjectURL(obj);},4000);
+_t("\u2b07\ufe0f Download started!");
+}catch(e){
+console.error(e);
+window.open(_u,"_blank","noopener");
+_t("\u2139\ufe0f Opened in a new tab \u2014 press and hold the image to save it");
+}
+}
 function _gen(){
 if(_g)return;
 var pr=_q("imgPrompt"),v=pr.value.trim(),btn=_q("generateBtn"),rc=_q("resultCard"),pv=_q("previewContainer"),dw=_q("downloadWrapper");
@@ -34,6 +51,16 @@ document.addEventListener("DOMContentLoaded",function(){
 _q("generateBtn").addEventListener("click",_gen);
 _q("btnInfo").addEventListener("click",_om);
 _q("modalCloseBtn").addEventListener("click",_cm);
+_q("scrollTopBtn").addEventListener("click",_st);
+_q("lightboxCloseBtn").addEventListener("click",_cf);
+_q("modalOverlay").addEventListener("click",function(e){if(e.target===this)_cm();});
+_q("lightbox").addEventListener("click",function(e){if(e.target===this)_cf();});
+_q("imgPrompt").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();_gen();}});
+_q("previewContainer").addEventListener("click",function(e){var b=e.target.closest('[data-act="eye"]');if(b)_of();});
+_q("downloadWrapper").addEventListener("click",function(e){var b=e.target.closest('[data-act="dl"]');if(b)_dl();});
+document.querySelectorAll(".chip").forEach(function(c){c.addEventListener("click",function(){var pr=_q("imgPrompt");pr.value=c.textContent.trim().replace(/^\S+\s/,"");pr.focus();});});
+});
+})();
 _q("scrollTopBtn").addEventListener("click",_st);
 _q("lightboxCloseBtn").addEventListener("click",_cf);
 _q("modalOverlay").addEventListener("click",function(e){if(e.target===this)_cm();});
